@@ -1,0 +1,71 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body{
+  height: 100%;
+}
+
+body {
+  background-color: cornflowerblue;
+  color: aqua;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header, footer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+main{
+  flex: 1;
+  display: flex;
+}
+
+#gameCanvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  z-index: 1;
+}
+
+#staticInputField {
+  position: absolute; 
+  top: 82px;
+  left: 84.5%;
+  transform: translateX(-50%);  
+  z-index: 10;       
+  padding: 5px 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  text-align: center;
+  background-color: cornflowerblue;
+  border-radius: 10px;
+  border-color:cornflowerblue;
+}
+
+/*#staticInputField {
+/*  position: absolute;
+/*  top: 10px;
+/*  left: 800px;  
+/*  width: 300px;
+/*  padding: 6px;
+/*  font-size: 16px;
+/*  border: 1px solid #000000;
+/*  border-radius:  32px;
+/*  text-align: center;
+/*  background-color: #00a2ff;
+/*  z-index: 1;
+/*}
