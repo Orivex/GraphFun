@@ -1,5 +1,4 @@
 import './style.css'
-import Phaser from 'phaser'
 
 const width = 1600;
 const height = 800;
