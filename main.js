@@ -23,8 +23,6 @@ class GameScene extends Phaser.Scene{
 
     this.graphics = this.add.graphics();
     
-
-    
     const spawnerVertex = this.add.text(800 - 600, 10, "Add Vertex", {
       fill: 'rgb(189, 189, 189)',
       fontSize: 30, 
