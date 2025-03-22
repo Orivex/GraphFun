@@ -1,5 +1,5 @@
 # GraphFun
-Build graphs and use the dijkstra algorithm to find the shortes path!
+Build graphs and use the dijkstra algorithm to find the shortest path!
 
 This is the open source code
 Soon, I will host the website.
