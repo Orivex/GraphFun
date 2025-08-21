@@ -8,6 +8,7 @@ class GameScene extends Phaser.Scene{
   constructor() {
     super("scene-game")
     this.mode = "drag";
+    this.mode = "drag";
   }
 
   preload(){
@@ -112,7 +113,6 @@ class GameScene extends Phaser.Scene{
   }
 
 }
-
 
 const config = {
   type:Phaser.WEBGL,
@@ -518,7 +518,6 @@ class Vertex extends Phaser.GameObjects.Sprite {
           console.log("Shorter path found!")
         }
       }
-
     }
 
     let beforeVertex = end;
