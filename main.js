@@ -1,5 +1,3 @@
-import './style.css'
-
 const width = 1600;
 const height = 800;
 const inputField = document.getElementById("staticInputField");
