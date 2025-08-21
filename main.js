@@ -12,10 +12,10 @@ class GameScene extends Phaser.Scene{
   }
 
   preload(){
-    this.load.image("bg", "/assets/background.png")
-    this.load.image("button", "/assets/LOGO.png")
-    this.load.image("vertex", "/assets/kreis.png")
-    this.load.image("vertex-marked", "/assets/kreis2.png")
+    this.load.image("bg", "./assets/background.png")
+    this.load.image("button", "./assets/LOGO.png")
+    this.load.image("vertex", "./assets/kreis.png")
+    this.load.image("vertex-marked", "./assets/kreis2.png")
   }
 
   create() {
