@@ -1,6 +1,7 @@
 const width = 1600;
 const height = 800;
 const inputField = document.getElementById("staticInputField");
+const inputFieldWrapper = document.getElementById("inputFieldWrapper");
 
 class GameScene extends Phaser.Scene{
   constructor() {
@@ -20,41 +21,116 @@ class GameScene extends Phaser.Scene{
     this.add.image(0, 0, "bg").setOrigin(0, 0);
 
     this.graphics = this.add.graphics();
-    
-    const spawnerVertex = this.add.text(800 - 600, 10, "Add Vertex", {
-      fill: 'rgb(189, 189, 189)',
-      fontSize: 30, 
-      backgroundColor: 'cornflowerblue', 
-      padding: { left: 30, right: 30, top: 3, bottom: 3},
-      fontFamily: 'Valken'
-    })
-    .setInteractive()
-    .on('pointerdown', () => this.addVertex(width/2, height/2), this);
-    
-    this.currentMode = this.add.text(1350, 50, `${this.mode}`, { fill: 'rgb(189, 189, 189)', fontSize: 20, backgroundColor: 'cornflowerblue', fontFamily: 'Valken', padding: {left: 10, right: 10, top: 3, bottom: 3}});
 
-    function createModeButton(x, y, text, mode) {
-      return this.add.text(x, y, text, {
-          fill: 'rgb(189, 189, 189)',
-          fontSize: 30, 
-          backgroundColor: 'cornflowerblue', 
-          padding: { left: 30, right: 30, top: 3, bottom: 3},
-          fontFamily: 'Valken'
+    // --- Color palette ---
+    const activeColor = '#6495ED';       // cornflowerblue
+    const inactiveColor = '#3a5a9c';     // darker blue
+    const hoverColor = '#7ba7f0';        // lighter blue
+    const actionColor = '#4a8c4a';       // green for "Add Vertex"
+    const actionHoverColor = '#5eaa5e';
+    const deleteColor = '#c0392b';       // red for delete mode
+    const deleteHoverColor = '#e74c3c';
+
+    // --- Toolbar background ---
+    const toolbarBg = this.add.graphics();
+    toolbarBg.fillStyle(0x000000, 0.45);
+    toolbarBg.fillRoundedRect(10, 6, width - 20, 52, 10);
+
+    // --- "Add Vertex" action button (separate, always green) ---
+    this.modeButtons = [];
+    this.modeIndicators = [];
+
+    const addBtn = this.add.text(24, 12, "＋  Add Vertex", {
+      fill: '#ffffff',
+      fontSize: 22,
+      backgroundColor: actionColor,
+      padding: { left: 18, right: 18, top: 8, bottom: 8 },
+      fontFamily: 'Inter, sans-serif',
+      fontStyle: 'bold'
+    })
+    .setInteractive({ useHandCursor: true })
+    .on('pointerover', () => addBtn.setStyle({ backgroundColor: actionHoverColor }))
+    .on('pointerout', () => addBtn.setStyle({ backgroundColor: actionColor }))
+    .on('pointerdown', () => {
+      this.addVertex(width / 2, height / 2);
+      // Quick flash feedback
+      addBtn.setStyle({ backgroundColor: '#ffffff' });
+      this.time.delayedCall(100, () => addBtn.setStyle({ backgroundColor: actionColor }));
+    }, this);
+
+    // --- Separator ---
+    const separator = this.add.graphics();
+    separator.fillStyle(0xffffff, 0.2);
+    separator.fillRect(260, 14, 2, 36);
+
+    // --- Mode Buttons ---
+    const modes = [
+      { text: "✋  Drag",      mode: "drag",     x: 280 },
+      { text: "📐  Line",      mode: "line",     x: 440 },
+      { text: "✏️  Value",     mode: "value",    x: 590 },
+      { text: "🗑️  Delete",   mode: "delete",   x: 745 },
+      { text: "🔍  Dijkstra",  mode: "dijkstra", x: 910 },
+    ];
+
+    modes.forEach((btnDef) => {
+      const isDelete = btnDef.mode === 'delete';
+      const btnInactive = isDelete ? '#7a3030' : inactiveColor;
+      const btnActive = isDelete ? deleteColor : activeColor;
+      const btnHover = isDelete ? deleteHoverColor : hoverColor;
+
+      const btn = this.add.text(btnDef.x, 12, btnDef.text, {
+        fill: '#cccccc',
+        fontSize: 22,
+        backgroundColor: btnInactive,
+        padding: { left: 16, right: 16, top: 8, bottom: 8 },
+        fontFamily: 'Inter, sans-serif',
       })
-      .setInteractive()
-      .on('pointerdown', () => this.selectMode(mode), this);
+      .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => {
+        if (this.mode !== btnDef.mode) {
+          btn.setStyle({ backgroundColor: btnHover, fill: '#ffffff' });
+        }
+      })
+      .on('pointerout', () => {
+        if (this.mode !== btnDef.mode) {
+          btn.setStyle({ backgroundColor: btnInactive, fill: '#cccccc' });
+        }
+      })
+      .on('pointerdown', () => this.selectMode(btnDef.mode), this);
+
+      // Active indicator line (drawn below button)
+      const indicator = this.add.graphics();
+      indicator.setVisible(false);
+
+      this.modeButtons.push({ btn, mode: btnDef.mode, activeColor: btnActive, inactiveColor: btnInactive, indicator });
+    });
+
+    // Set initial active state
+    this.updateButtonStates();
   }
 
-    const dragMode = createModeButton.call(this, 800 - 350, 10, "Drag", "drag");
-    const lineMode = createModeButton.call(this, 800 - 190, 10, "Line", "line");
-    const valueMode = createModeButton.call(this, 800 - 45 , 10, "Value", "value");
-    const deleteMode = createModeButton.call(this, 800 + 125, 10, "Delete", "delete");
-    const dijkstra = createModeButton.call(this, 800 + 305, 10, "Dijkstra", "dijkstra");
-
+  updateButtonStates() {
+    this.modeButtons.forEach(({ btn, mode, activeColor, inactiveColor, indicator }) => {
+      indicator.clear();
+      if (this.mode === mode) {
+        btn.setStyle({ backgroundColor: activeColor, fill: '#ffffff', fontStyle: 'bold' });
+        // Draw underline indicator
+        const bounds = btn.getBounds();
+        indicator.fillStyle(0xffffff, 0.9);
+        indicator.fillRoundedRect(bounds.x + 6, bounds.y + bounds.height - 4, bounds.width - 12, 3, 1.5);
+        indicator.setVisible(true);
+      } else {
+        btn.setStyle({ backgroundColor: inactiveColor, fill: '#cccccc', fontStyle: '' });
+        indicator.setVisible(false);
+      }
+    });
   }
 
   selectMode(mode) {
     this.mode = mode;
+
+    // Update button visuals
+    this.updateButtonStates();
 
     this.children.each(child => {
       if(child.getData('vertexInstance')) {
@@ -107,17 +183,20 @@ class GameScene extends Phaser.Scene{
 
 
   update() {
-    this.currentMode.setText("Current mode: " + this.mode);
   }
 
 }
 
 const config = {
-  type:Phaser.WEBGL,
-  width:width,
-  height:height,
-  canvas:gameCanvas,
-  scene:[GameScene]
+  type: Phaser.AUTO,
+  parent: 'gameContainer',
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: width,
+    height: height,
+  },
+  scene: [GameScene]
 }
 
 const game = new Phaser.Game(config)
@@ -143,7 +222,7 @@ class Edge extends Phaser.GameObjects.Sprite {
       fill: 'rgb(189, 189, 189)',
       padding: { x: 10, y: 5 },
       align: 'center',
-      fontFamily: 'Valken',
+      fontFamily: 'Inter, sans-serif',
       stroke: 'black',
       strokeThickness: 5
     }).setOrigin(0.5);
@@ -230,8 +309,9 @@ class Edge extends Phaser.GameObjects.Sprite {
   
           inputField.type = "number";
           inputField.value = this.getWeight();
+          inputFieldWrapper.classList.add('active');
           inputField.focus();
-          inputField.select();
+          setTimeout(() => inputField.select(), 50);
   
           if (this.enterKeyHandler) {
             this.scene.input.keyboard.removeListener('keydown-ENTER', this.enterKeyHandler);
@@ -249,19 +329,21 @@ class Edge extends Phaser.GameObjects.Sprite {
               otherEdge.setWeight(inputField.value)
             }
 
-            inputField.value = ""
-            inputField.blur()
-            this.scene.setEdgesAndVerticesActive(true)
-            this.drawConnection(0x6495ED)
+            inputField.value = "";
+            inputField.blur();
+            inputFieldWrapper.classList.remove('active');
+            this.scene.setEdgesAndVerticesActive(true);
+            this.drawConnection(0x6495ED);
           }
   
           this.scene.input.keyboard.once('keydown-ENTER', this.enterKeyHandler)
   
           this.scene.input.once('pointerdown', () => {
-            inputField.value = ""
-            inputField.blur()
-            this.scene.setEdgesAndVerticesActive(true)
-            this.drawConnection(0x6495ED)
+            inputField.value = "";
+            inputField.blur();
+            inputFieldWrapper.classList.remove('active');
+            this.scene.setEdgesAndVerticesActive(true);
+            this.drawConnection(0x6495ED);
           })
         }, this)
         break;
@@ -311,7 +393,7 @@ class Vertex extends Phaser.GameObjects.Sprite {
       fill: 'rgb(189, 189, 189)',
       padding: { x: 10, y: 5 },
       align: 'center',
-      fontFamily: 'Valken',
+      fontFamily: 'Inter, sans-serif',
       stroke: 'black',
       strokeThickness: 5
     }).setOrigin(0.5)
@@ -417,8 +499,9 @@ class Vertex extends Phaser.GameObjects.Sprite {
 
             inputField.type = "text";
             inputField.value = this.getValue();
+            inputFieldWrapper.classList.add('active');
             inputField.focus();
-            inputField.select(inputField);
+            setTimeout(() => inputField.select(), 50);
 
             this.enterKeyHandler = () => {
 
@@ -429,6 +512,7 @@ class Vertex extends Phaser.GameObjects.Sprite {
 
               inputField.value = "";
               inputField.blur();
+              inputFieldWrapper.classList.remove('active');
               this.scene.setEdgesAndVerticesActive(true);
               this.setTexture("vertex");
             };
@@ -438,6 +522,7 @@ class Vertex extends Phaser.GameObjects.Sprite {
             this.scene.input.once('pointerdown', () => {
               inputField.value = "";
               inputField.blur();
+              inputFieldWrapper.classList.remove('active');
               this.scene.setEdgesAndVerticesActive(true);
               this.setTexture("vertex");
 

@@ -2,18 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="assets/LOGO.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="assets/LOGO.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <link rel="stylesheet" href="./style.css">
     <title>Graph Fun</title>
   </head>
   <body>
     <header>
-      <p>Graph Fun</p>
+      <h1>Graph Fun</h1>
     </header>
     <main>
-      <canvas id="gameCanvas"></canvas>
-      <input id="staticInputField" type="text"/>
+      <div id="gameContainer"></div>
+      <div class="inputFieldWrapper" id="inputFieldWrapper">
+        <input id="staticInputField" type="text" placeholder="Wert eingeben..." />
+      </div>
     </main>
     <footer>By InformatiKater</footer>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
