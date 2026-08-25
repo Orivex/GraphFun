@@ -24,7 +24,6 @@ Try the project directly here:
 This project is primarily built using modern web technologies:
 * **HTML5 & CSS3** for structure and styling
 * **JavaScript** (ES6+) for the interactive logic and the Dijkstra algorithm implementation
-* *(If you use frameworks like React, Vue, or canvas libraries like D3.js/Vis.js, add them here!)*
 
 ## 💻 Local Installation
 
