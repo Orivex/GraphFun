@@ -21,10 +21,11 @@ Try the project directly here:
 
 ## 🛠️ Technologies
 
-This project is built using vanilla web technologies, keeping it lightweight and fast without the need for external frameworks:
+This project is built using web technologies and the Phaser game framework for rendering and interaction:
 * **HTML5** for structure
 * **CSS3** for styling and animations
 * **JavaScript (ES6+)** for the interactive logic and the Dijkstra algorithm implementation
+* **Phaser 3** as the core engine for drawing and managing the interactive graph canvas
 
 ## 💻 Local Installation
 
@@ -40,8 +41,15 @@ If you want to run or develop the project locally on your machine:
    cd GraphFun
    ```
 
-3. **Run the project**
-   Since this is a standard frontend application, no build steps or dependencies are required. Simply open the `index.html` file in your browser, or use a local development server (e.g., Live Server extension in VS Code).
+3. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
 
 ## 📖 Usage Guide
 
