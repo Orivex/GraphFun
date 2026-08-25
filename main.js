@@ -52,8 +52,16 @@ class GameScene extends Phaser.Scene{
     .on('pointerover', () => addBtn.setStyle({ backgroundColor: actionHoverColor }))
     .on('pointerout', () => addBtn.setStyle({ backgroundColor: actionColor }))
     .on('pointerdown', () => {
-      this.addVertex(width / 2, height / 2);
-      // Quick flash feedback
+      const rx = width / 2 + (Math.random() - 0.5) * 200;
+      const ry = height / 2 + (Math.random() - 0.5) * 200;
+      const v = this.addVertex(rx, ry);
+      v.setScale(0);
+      this.tweens.add({
+        targets: v,
+        scale: v.size,
+        duration: 300,
+        ease: 'Back.out'
+      });
       addBtn.setStyle({ backgroundColor: '#ffffff' });
       this.time.delayedCall(100, () => addBtn.setStyle({ backgroundColor: actionColor }));
     }, this);
@@ -461,31 +469,21 @@ class Vertex extends Phaser.GameObjects.Sprite {
 
         case "line":
           this.scene.input.setDraggable(this, false);
-
-          this.once('pointerdown', (pointer) => {
-
-            if(this.selected)
-                return;
-
+          this.once('pointerdown', () => {
+            if(this.selected) return;
             this.selected = true;
-
-            //const gameObj = this.scene.input.hitTestPointer(pointer)[0];
-            //if(gameObj instanceof Vertex) {
-              this.scene.mode = "clickable";
-              this.scene.children.each(child => {
-                if(child instanceof Vertex && child.input) {
-                  const vertexInstance = child.getData('vertexInstance');
-                  if(vertexInstance && vertexInstance.selected == false) {  
-                    vertexInstance.modeChanged();
-                    vertexInstance.selectedVertex = this;
-                  }
+            this.setTexture("vertex-marked");
+            this.scene.mode = "clickable";
+            this.scene.children.each(child => {
+              if(child instanceof Vertex && child.input) {
+                const vertexInstance = child.getData('vertexInstance');
+                if(vertexInstance && vertexInstance.selected == false) {  
+                  vertexInstance.modeChanged();
+                  vertexInstance.selectedVertex = this;
                 }
-              });
-            }
-            
-          //}
-        )
-
+              }
+            });
+          });
           break;
 
         case "value":
@@ -541,12 +539,9 @@ class Vertex extends Phaser.GameObjects.Sprite {
 
         case "dijkstra":
           this.once('pointerdown', () => {
-
-            if(this.selected)
-                return;
-
+            if(this.selected) return;
             this.selected = true;
-
+            this.setTexture("vertex-marked");
             this.scene.mode = "clickable";
             this.scene.children.each(child => {
               if(child instanceof Vertex) {
@@ -558,8 +553,7 @@ class Vertex extends Phaser.GameObjects.Sprite {
                 }
               }
             });
-            
-          })
+          });
           break;
           
     }
@@ -605,27 +599,50 @@ class Vertex extends Phaser.GameObjects.Sprite {
 
     let beforeVertex = end;
     let currentVertex = end.previousVertex;
-    
-    let path = [];
+    let edgesInPath = [];
     
     this.scene.updateGraphics();
 
-    while(currentVertex != null) { //GET PATH
+    if (start !== end && currentVertex == null) {
+      const errorText = this.scene.add.text(end.x, end.y - 40, "No path found", {
+        fontSize: 24,
+        fill: '#ff4444',
+        fontFamily: 'Inter, sans-serif',
+        stroke: '#000000',
+        strokeThickness: 5,
+        fontStyle: 'bold'
+      }).setOrigin(0.5);
 
+      this.scene.tweens.add({
+        targets: errorText,
+        y: end.y - 90,
+        alpha: 0,
+        duration: 2000,
+        ease: 'Power2',
+        onComplete: () => errorText.destroy()
+      });
+    }
+
+    while(currentVertex != null) {
       let edge = currentVertex.getEdgeOfVertex(beforeVertex);
-      this.scene.children.bringToTop(edge.lineGraphics);
-      edge.drawConnection(0xff0000);
+      edgesInPath.push(edge);
       beforeVertex = currentVertex;
-      path.push(currentVertex.getValue());
-
-      
       currentVertex = currentVertex.previousVertex;
     }
 
-    path.reverse();
-    console.log(path)
+    edgesInPath.reverse();
+    
+    let delay = 0;
+    const stepTime = 1200 / Math.max(edgesInPath.length, 1);
+    
+    edgesInPath.forEach(edge => {
+      this.scene.time.delayedCall(delay, () => {
+        this.scene.children.bringToTop(edge.lineGraphics);
+        edge.drawConnection(0xff0000);
+      });
+      delay += stepTime;
+    });
   
-    //RESET
     this.scene.children.each(child => {
       if(child instanceof Vertex) {
         const vertexInstance = child.getData('vertexInstance');
@@ -633,8 +650,6 @@ class Vertex extends Phaser.GameObjects.Sprite {
         vertexInstance.previousVertex = null;
       }
     });
-
-
   }
 
   isConnectedTo(vertex) {
